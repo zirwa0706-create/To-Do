@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TO DO</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ───────────────────────────
+       SIDEBAR
+  ─────────────────────────────── -->
+  <aside class="sidebar">
+
+    <div class="sidebar__logo">
+      <span class="logo-to">TO</span>
+      <span class="logo-do">DO</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <a href="#" class="nav-item active" id="nav-home" title="Home">
+        <i class='bx bx-home-alt-2'></i>
+      </a>
+      <a href="#" class="nav-item" id="nav-add" title="Add Task">
+        <i class='bx bx-plus-circle'></i>
+      </a>
+      <a href="#" class="nav-item" id="nav-completed" title="Completed Tasks">
+        <i class='bx bx-checkbox-checked'></i>
+      </a>
+      <a href="#" class="nav-item" id="nav-edit" title="View & Edit Tasks">
+        <i class='bx bx-edit'></i>
+      </a>
+      <a href="#" class="nav-item" id="nav-categories" title="Categories">
+        <i class='bx bx-category'></i>
+      </a>
+      <a href="#" class="nav-item" id="nav-calendar" title="Calendar">
+        <i class='bx bx-calendar'></i>
+      </a>
+    </nav>
+
+  </aside>
+
+  <!-- ───────────────────────────
+       MAIN CONTENT
+  ─────────────────────────────── -->
+  <main class="main">
+    <div class="content-box">
+
+      <!-- QUOTE BANNER -->
+      <div class="banner">
+        <p class="banner__text" id="quote-text">AND IT'S TOTALLY OKAY TO BLOOM ALONE..</p>
+        <button class="banner__add-btn" id="open-quote-popup" title="Add a quote">
+          <i class='bx bx-plus'></i>
+        </button>
+      </div>
+
+      <!-- PANELS ROW -->
+      <div class="panels-row">
+
+        <!-- LEFT: Tasks Due Today -->
+        <section class="panel panel--today">
+          <h2 class="panel__title">TASKS DUE TODAY</h2>
+          <ul class="task-list" id="tasks-today">
+            <li class="task-item">Dishes</li>
+            <li class="task-item">Cleaning</li>
+            <li class="task-item">Journaling</li>
+            <li class="task-item">Skincare</li>
+            <li class="task-item">Meeting</li>
+          </ul>
+        </section>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <!-- Completed Tasks -->
+          <section class="panel panel--completed">
+            <h2 class="panel__title">TASKS COMPLETED</h2>
+            <ul class="task-list task-list--done" id="tasks-completed">
+              <li>Branding</li>
+              <li>Cooking</li>
+            </ul>
+          </section>
+
+          <!-- Pinned Category Cards -->
+          <div class="categories" id="pinned-categories">
+            <div class="category-card" data-category="work"><span>WORK</span></div>
+            <div class="category-card" data-category="study"><span>STUDY</span></div>
+            <div class="category-card" data-category="life"><span>LIFE</span></div>
+            <div class="category-card" data-category="self"><span>SELF</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Add Quote
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-quote"></div>
+  <div class="popup" id="popup-quote">
+    <div class="popup__header">
+      <h3 class="popup__title">ADD A QUOTE</h3>
+      <button class="popup__close" id="close-quote-popup"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <textarea
+        class="popup__textarea"
+        id="quote-input"
+        placeholder="Type your motivational quote here..."
+        rows="3"
+      ></textarea>
+    </div>
+    <div class="popup__footer">
+      <button class="btn btn--primary" id="save-quote">SAVE QUOTE</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Category Tasks
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-category"></div>
+  <div class="popup" id="popup-category">
+    <div class="popup__header">
+      <h3 class="popup__title" id="category-popup-title">WORK</h3>
+      <button class="popup__close" id="close-category-popup"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <ul class="task-list task-list--popup" id="category-task-list"></ul>
+      <p class="popup__empty" id="category-empty" style="display:none;">No tasks for today in this category.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Add Task  (CHUNK 3)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-add-task"></div>
+  <div class="popup popup--add-task" id="popup-add-task">
+
+    <!-- ── STEP 1: The form ── -->
+    <div id="add-task-form-view">
+      <div class="popup__header">
+        <h3 class="popup__title">ADD NEW TASK</h3>
+        <button class="popup__close" id="close-add-task"><i class='bx bx-x'></i></button>
+      </div>
+
+      <div class="popup__body">
+
+        <!-- Task Name -->
+        <div class="form-group">
+          <label class="form-label">TASK NAME <span class="form-required">*</span></label>
+          <input
+            type="text"
+            class="popup__input"
+            id="task-name"
+            placeholder="What needs to be done?"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">CATEGORY <span class="form-required">*</span></label>
+          <select class="popup__select" id="task-category">
+            <option value="" disabled selected>Select a category</option>
+          </select>
+        </div>
+
+        <!-- Due Date -->
+        <div class="form-group">
+          <label class="form-label">DUE DATE <span class="form-required">*</span></label>
+          <input
+            type="date"
+            class="popup__input popup__input--date"
+            id="task-due-date"
+          />
+        </div>
+
+        <!-- Description (optional) -->
+        <div class="form-group">
+          <label class="form-label">DESCRIPTION <span class="form-optional">(optional)</span></label>
+          <textarea
+            class="popup__textarea"
+            id="task-description"
+            placeholder="Any notes or details..."
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Error message -->
+        <p class="form-error" id="add-task-error" style="display:none;"></p>
+
+      </div>
+
+      <div class="popup__footer">
+        <button class="btn btn--ghost" id="cancel-add-task">CANCEL</button>
+        <button class="btn btn--primary" id="save-task">SAVE TASK</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Success screen ── -->
+    <div id="add-task-success-view" style="display:none;">
+      <div class="success-screen">
+        <div class="success-icon"><i class='bx bx-check-circle'></i></div>
+        <h3 class="success-title">TASK ADDED!</h3>
+        <p class="success-msg" id="success-task-name"></p>
+        <div class="success-actions">
+          <button class="btn btn--ghost" id="success-add-another">ADD ANOTHER</button>
+          <button class="btn btn--primary" id="success-go-home">GO HOME</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
