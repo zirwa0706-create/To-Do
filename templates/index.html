@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TO DO</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <span class="logo-to">TO</span>
+      <span class="logo-do">DO</span>
+    </div>
+    <nav class="sidebar__nav">
+      <a href="#" class="nav-item active" id="nav-home"       title="Home"><i class='bx bx-home-alt-2'></i></a>
+      <a href="#" class="nav-item"        id="nav-add"        title="Add Task"><i class='bx bx-plus-circle'></i></a>
+      <a href="#" class="nav-item"        id="nav-completed"  title="Completed Tasks"><i class='bx bx-checkbox-checked'></i></a>
+      <a href="#" class="nav-item"        id="nav-edit"       title="View &amp; Edit Tasks"><i class='bx bx-edit'></i></a>
+      <a href="#" class="nav-item"        id="nav-categories" title="Categories"><i class='bx bx-category'></i></a>
+      <a href="#" class="nav-item"        id="nav-calendar"   title="Calendar"><i class='bx bx-calendar'></i></a>
+    </nav>
+  </aside>
+
+  <!-- ═══════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════ -->
+  <main class="main">
+    <div class="content-box">
+
+      <!-- QUOTE BANNER -->
+      <div class="banner">
+        <p class="banner__text" id="quote-text">loading...</p>
+        <button class="banner__add-btn" id="open-quote-popup" title="Add a quote">
+          <i class='bx bx-plus'></i>
+        </button>
+      </div>
+
+      <!-- PANELS ROW -->
+      <div class="panels-row">
+
+        <!-- LEFT: Tasks Due Today -->
+        <section class="panel panel--today">
+          <h2 class="panel__title">TASKS DUE TODAY</h2>
+          <ul class="task-list" id="tasks-today">
+            <li class="task-placeholder">Loading tasks...</li>
+          </ul>
+        </section>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <section class="panel panel--completed">
+            <h2 class="panel__title">TASKS COMPLETED</h2>
+            <ul class="task-list task-list--done" id="tasks-completed">
+              <li class="task-placeholder">Loading...</li>
+            </ul>
+          </section>
+
+          <div class="categories" id="pinned-categories">
+            <!-- loaded dynamically -->
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Add Quote
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-quote"></div>
+  <div class="popup" id="popup-quote">
+    <div class="popup__header">
+      <h3 class="popup__title">ADD A QUOTE</h3>
+      <button class="popup__close" id="close-quote-popup"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <textarea class="popup__textarea" id="quote-input"
+        placeholder="Type your motivational quote here..." rows="3"></textarea>
+    </div>
+    <div class="popup__footer" style="justify-content:space-between;">
+      <button class="btn btn--ghost" id="open-quote-bank">
+        <i class='bx bx-list-ul'></i>&nbsp; VIEW QUOTE BANK
+      </button>
+      <button class="btn btn--primary" id="save-quote">SAVE QUOTE</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Quote Bank (view / edit / delete)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-quote-bank"></div>
+  <div class="popup popup--wide" id="popup-quote-bank">
+    <div class="popup__header">
+      <h3 class="popup__title">QUOTE BANK</h3>
+      <button class="popup__close" id="close-quote-bank"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <ul class="quote-bank-list" id="quote-bank-list"></ul>
+      <p class="popup__empty" id="quote-bank-empty" style="display:none;">No quotes yet.</p>
+    </div>
+    <div class="popup__footer">
+      <button class="btn btn--ghost" id="quote-bank-back">← BACK</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Category Tasks
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-category"></div>
+  <div class="popup" id="popup-category">
+    <div class="popup__header">
+      <h3 class="popup__title" id="category-popup-title">CATEGORY</h3>
+      <button class="popup__close" id="close-category-popup"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <ul class="task-list task-list--popup" id="category-task-list"></ul>
+      <p class="popup__empty" id="category-empty" style="display:none;">No tasks for today in this category.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Add Task
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-add-task"></div>
+  <div class="popup popup--add-task" id="popup-add-task">
+
+    <div id="add-task-form-view">
+      <div class="popup__header">
+        <h3 class="popup__title">ADD NEW TASK</h3>
+        <button class="popup__close" id="close-add-task"><i class='bx bx-x'></i></button>
+      </div>
+      <div class="popup__body">
+        <div class="form-group">
+          <label class="form-label">TASK NAME <span class="form-required">*</span></label>
+          <input type="text" class="popup__input" id="task-name"
+            placeholder="What needs to be done?" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CATEGORY <span class="form-required">*</span></label>
+          <select class="popup__select" id="task-category">
+            <option value="" disabled selected>Select a category</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DUE DATE <span class="form-required">*</span></label>
+          <input type="date" class="popup__input popup__input--date" id="task-due-date"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DESCRIPTION <span class="form-optional">(optional)</span></label>
+          <textarea class="popup__textarea" id="task-description"
+            placeholder="Any notes or details..." rows="3"></textarea>
+        </div>
+        <p class="form-error" id="add-task-error" style="display:none;"></p>
+      </div>
+      <div class="popup__footer">
+        <button class="btn btn--ghost"   id="cancel-add-task">CANCEL</button>
+        <button class="btn btn--primary" id="save-task">SAVE TASK</button>
+      </div>
+    </div>
+
+    <div id="add-task-success-view" style="display:none;">
+      <div class="success-screen">
+        <div class="success-icon"><i class='bx bx-check-circle'></i></div>
+        <h3 class="success-title">TASK ADDED!</h3>
+        <p class="success-msg" id="success-task-name"></p>
+        <div class="success-actions">
+          <button class="btn btn--ghost"   id="success-add-another">ADD ANOTHER</button>
+          <button class="btn btn--primary" id="success-go-home">GO BACK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Quick Actions (tap on a task)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-quick"></div>
+  <div class="popup popup--quick" id="popup-quick">
+    <div class="popup__header">
+      <h3 class="popup__title" id="quick-task-name">TASK</h3>
+      <button class="popup__close" id="close-quick"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <div class="quick-actions">
+        <button class="quick-btn quick-btn--complete" id="quick-complete">
+          <i class='bx bx-check-circle'></i>
+          <span>Mark as Complete</span>
+        </button>
+        <button class="quick-btn quick-btn--edit" id="quick-edit">
+          <i class='bx bx-edit'></i>
+          <span>Edit Task</span>
+        </button>
+        <button class="quick-btn quick-btn--delete" id="quick-delete">
+          <i class='bx bx-trash'></i>
+          <span>Delete Task</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Edit Task (today — all fields)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-edit-task"></div>
+  <div class="popup popup--add-task" id="popup-edit-task">
+    <div class="popup__header">
+      <h3 class="popup__title">EDIT TASK</h3>
+      <button class="popup__close" id="close-edit-task"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <input type="hidden" id="edit-task-id"/>
+      <div class="form-group">
+        <label class="form-label">TASK NAME <span class="form-required">*</span></label>
+        <input type="text" class="popup__input" id="edit-task-name" autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CATEGORY <span class="form-required">*</span></label>
+        <select class="popup__select" id="edit-task-category"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">DUE DATE <span class="form-required">*</span></label>
+        <input type="date" class="popup__input popup__input--date" id="edit-task-due-date"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">DESCRIPTION <span class="form-optional">(optional)</span></label>
+        <textarea class="popup__textarea" id="edit-task-description" rows="3"></textarea>
+      </div>
+      <p class="form-error" id="edit-task-error" style="display:none;"></p>
+    </div>
+    <div class="popup__footer">
+      <button class="btn btn--danger"  id="edit-task-delete">DELETE</button>
+      <button class="btn btn--primary" id="save-edit-task">SAVE CHANGES</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: View & Edit All Tasks (nav icon)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-view-tasks"></div>
+  <div class="popup popup--wide" id="popup-view-tasks">
+    <div class="popup__header">
+      <h3 class="popup__title">VIEW &amp; EDIT TASKS</h3>
+      <button class="popup__close" id="close-view-tasks"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+
+      <!-- Today's Tasks -->
+      <div class="task-section">
+        <h4 class="task-section__title">TODAY'S TASKS</h4>
+        <ul class="task-list task-list--editable" id="view-tasks-today"></ul>
+        <p class="popup__empty" id="view-today-empty" style="display:none;">No tasks for today.</p>
+      </div>
+
+      <!-- Overdue Tasks -->
+      <div class="task-section">
+        <h4 class="task-section__title overdue">OVERDUE TASKS</h4>
+        <ul class="task-list task-list--editable" id="view-tasks-overdue"></ul>
+        <p class="popup__empty" id="view-overdue-empty" style="display:none;">No overdue tasks.</p>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Reschedule Overdue Task
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-reschedule"></div>
+  <div class="popup" id="popup-reschedule">
+    <div class="popup__header">
+      <h3 class="popup__title">RESCHEDULE TASK</h3>
+      <button class="popup__close" id="close-reschedule"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <p class="reschedule-task-name" id="reschedule-task-name"></p>
+      <input type="hidden" id="reschedule-task-id"/>
+      <div class="form-group">
+        <label class="form-label">NEW DUE DATE <span class="form-required">*</span></label>
+        <input type="date" class="popup__input popup__input--date" id="reschedule-date"/>
+      </div>
+      <p class="form-error" id="reschedule-error" style="display:none;"></p>
+    </div>
+    <div class="popup__footer">
+      <button class="btn btn--danger"  id="reschedule-delete">DELETE</button>
+      <button class="btn btn--primary" id="save-reschedule">RESCHEDULE</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Completed Tasks by Date (nav icon)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-completed-date"></div>
+  <div class="popup popup--wide" id="popup-completed-date">
+
+    <!-- Step 1: Date picker -->
+    <div id="completed-date-picker-view">
+      <div class="popup__header">
+        <h3 class="popup__title">COMPLETED TASKS</h3>
+        <button class="popup__close" id="close-completed-date"><i class='bx bx-x'></i></button>
+      </div>
+      <div class="popup__body">
+        <p class="completed-date-hint">Select a date to view all completed tasks for that day.</p>
+        <div class="form-group">
+          <label class="form-label">SELECT DATE <span class="form-required">*</span></label>
+          <input type="date" class="popup__input popup__input--date" id="completed-date-input"/>
+        </div>
+        <p class="form-error" id="completed-date-error" style="display:none;"></p>
+      </div>
+      <div class="popup__footer">
+        <button class="btn btn--primary" id="search-completed-date">VIEW TASKS</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Results -->
+    <div id="completed-date-results-view" style="display:none;">
+      <div class="popup__header">
+        <h3 class="popup__title" id="completed-date-results-title">COMPLETED</h3>
+        <button class="popup__close" id="close-completed-results"><i class='bx bx-x'></i></button>
+      </div>
+      <div class="popup__body">
+        <ul class="task-list task-list--results" id="completed-date-list"></ul>
+        <p class="popup__empty" id="completed-date-empty" style="display:none;">No completed tasks found for this date.</p>
+      </div>
+      <div class="popup__footer">
+        <button class="btn btn--ghost" id="completed-date-back">← BACK</button>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Categories Manager (nav icon)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-categories"></div>
+  <div class="popup popup--categories" id="popup-categories">
+
+    <div class="popup__header">
+      <h3 class="popup__title">CATEGORIES</h3>
+      <button class="popup__close" id="close-categories"><i class='bx bx-x'></i></button>
+    </div>
+
+    <div class="popup__body">
+
+      <!-- Add new category -->
+      <div class="cat-add-row">
+        <input type="text" class="popup__input" id="new-category-input"
+          placeholder="New category name..." autocomplete="off"/>
+        <button class="btn btn--primary" id="save-new-category">ADD</button>
+      </div>
+      <p class="form-error" id="category-add-error" style="display:none;"></p>
+
+      <!-- Pin hint -->
+      <p class="cat-pin-hint">
+        <i class='bx bx-pin'></i>
+        Pin up to 4 categories to show on your home page.
+        <span id="pin-count-label"></span>
+      </p>
+
+      <!-- Drag & drop hint -->
+      <p class="cat-drag-hint">
+        <i class='bx bx-move'></i>
+        Drag any task card and drop it into another category to move it.
+      </p>
+
+      <!-- Category lanes — drag & drop area -->
+      <div class="cat-lanes" id="cat-lanes">
+        <!-- filled dynamically -->
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: New Category — Post-Create Options
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-cat-created"></div>
+  <div class="popup popup--confirm" id="popup-cat-created">
+    <div class="popup__header">
+      <h3 class="popup__title">CATEGORY CREATED!</h3>
+      <button class="popup__close" id="close-cat-created"><i class='bx bx-x'></i></button>
+    </div>
+    <div class="popup__body">
+      <p class="confirm-msg" id="cat-created-msg"></p>
+    </div>
+    <div class="popup__footer" style="justify-content:center; gap:12px;">
+      <button class="btn btn--ghost"   id="cat-created-add-task">ADD TASK TO IT</button>
+      <button class="btn btn--primary" id="cat-created-done">DONE</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       POPUP: Calendar (nav icon)
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-calendar"></div>
+  <div class="popup popup--calendar" id="popup-calendar">
+
+    <div class="popup__header">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="cal-prev"><i class='bx bx-chevron-left'></i></button>
+        <h3 class="popup__title" id="cal-month-label">MONTH YEAR</h3>
+        <button class="cal-nav-btn" id="cal-next"><i class='bx bx-chevron-right'></i></button>
+      </div>
+      <button class="popup__close" id="close-calendar"><i class='bx bx-x'></i></button>
+    </div>
+
+    <div class="popup__body">
+
+      <!-- Calendar grid -->
+      <div class="cal-grid-wrapper">
+        <div class="cal-weekdays">
+          <span>Sun</span><span>Mon</span><span>Tue</span>
+          <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- Day task history — shown when a date is clicked -->
+      <div class="cal-day-history" id="cal-day-history" style="display:none;">
+        <div class="cal-day-history__header">
+          <h4 class="cal-day-history__title" id="cal-day-title"></h4>
+          <button class="cal-back-btn" id="cal-back">← BACK</button>
+        </div>
+
+        <div class="cal-history-section">
+          <p class="cal-history-label">COMPLETED</p>
+          <ul class="cal-task-list" id="cal-completed-list"></ul>
+          <p class="cal-empty" id="cal-completed-empty" style="display:none;">None</p>
+        </div>
+
+        <div class="cal-history-section">
+          <p class="cal-history-label pending">PENDING / OVERDUE</p>
+          <ul class="cal-task-list" id="cal-pending-list"></ul>
+          <p class="cal-empty" id="cal-pending-empty" style="display:none;">None</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════
+       CONFIRM DELETE DIALOG
+  ═══════════════════════════════════════ -->
+  <div class="overlay" id="overlay-confirm"></div>
+  <div class="popup popup--confirm" id="popup-confirm">
+    <div class="popup__body">
+      <p class="confirm-msg" id="confirm-msg">Are you sure you want to delete this? This cannot be undone.</p>
+    </div>
+    <div class="popup__footer">
+      <button class="btn btn--ghost"  id="confirm-cancel">CANCEL</button>
+      <button class="btn btn--danger" id="confirm-delete">DELETE</button>
+    </div>
+  </div>
+
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
